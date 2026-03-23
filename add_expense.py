@@ -1,57 +1,72 @@
 import json
 import os
 
+
 def add_expense():
     """
-    Adds expense(s) for a given person to the data.json file.
-    The structure is: { "PersonName": { "ExpenseType": Amount, ... } }
+    Adds/updates expense(s) for a given person to the data.json file.
+    Supports negative amounts to reduce expenses (e.g., -50 to deduct ₹50).
     """
+    # 👤 Get person details
+    person_name = input("👤 Enter person name: ").strip().title()
 
-    # Ask for person's name
-    person_name = input("Enter the name of the person: ")
-    person_name = person_name.strip().title()
-    # Load existing data if JSON file exists
+    # 📂 Load existing data safely
     if os.path.exists("data.json"):
-        with open("data.json", "r", encoding="utf-8") as file:
-            try:
-                data = json.load(file)  # JSON -> Python dict
-            except json.JSONDecodeError:
-                data = {}  # If file is empty/corrupted
+        try:
+            with open("data.json", "r", encoding="utf-8") as file:
+                data = json.load(file)
+        except json.JSONDecodeError:
+            print("⚠️  Corrupted file. Starting fresh...")
+            data = {}
     else:
+        print("📄 Creating new records file...")
         data = {}
 
-    # Ensure person entry exists
+    # Ensure person record exists
     if person_name not in data:
         data[person_name] = {}
+        print(f"✨ Created new record for {person_name}")
 
-    # Loop to add multiple expenses
+    print("💡 Amount can't be below ₹0\n")
+    print("\n💡 TIP: Use NEGATIVE amounts to REDUCE expenses (e.g., -50)")
+
+    total_change = 0
+
+    # ➕ Add/Update multiple expenses
     while True:
-        expense_type = input("Enter expense type (e.g., Food, Travel): ")
-        expense_type = expense_type.strip().title()
+        expense_type = input("📊 Expense type (Food, Travel, etc.): ").strip().title()
+
         try:
-            amount = float(input("Enter amount: "))
+            amount = float(input("💰 Enter amount (₹): "))
         except ValueError:
-            print("❌ Invalid amount. Please enter a number.")
+            print("❌ Invalid amount! Enter a number (e.g., 50 or -25).")
             continue
 
-        # Add/update expense
-        if expense_type not in data[person_name]:
-            data[person_name][expense_type] = amount
-        else:
-            data[person_name][expense_type] += amount
-
-        # Ask if user wants to add more expenses
-        more = input("Add another expense? (Y/N): ")
-        if more.lower() == "y":
+        # Validate: cannot go below 0
+        new_amount = data[person_name].get(expense_type, 0) + amount
+        if new_amount < 0:
+            print(f"❌ Cannot reduce below ₹0! Current: ₹{data[person_name].get(expense_type, 0)}")
             continue
-        elif more.lower() == "n":
-            break
+
+        # Update expense
+        data[person_name][expense_type] = new_amount
+
+        if amount > 0:
+            print(f"📈 {expense_type}: +₹{amount} (New: ₹{new_amount})")
         else:
-            print("❌ Invalid choice. Exiting add operation.")
+            print(f"📉 {expense_type}: ₹{amount} (New: ₹{new_amount})")
+
+        total_change += amount
+
+        # Continue?
+        more = input("➕ Add another? [Y/n]: ").strip().lower()
+        if more in ("n", "no"):
             break
 
-    # Save back to JSON
+    # 💾 Save to file
     with open("data.json", "w", encoding="utf-8") as file:
         json.dump(data, file, indent=4)
 
-    print(f"\n✅ Expenses for {person_name} saved successfully.\n")
+    print(f"\n🎉 Update complete!")
+    print(f"📊 Net change for {person_name}: ₹{total_change:+.2f}")
+    print("✨ Records updated successfully!\n")
