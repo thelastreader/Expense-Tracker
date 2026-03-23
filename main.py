@@ -11,9 +11,9 @@ def main():
 
         print("      🎯 EXPENSE MANAGER 🎯")
 
-        print("1. ➕ Add Expense")
+        print("1. ➕ Add/Update Expense")
         print("2. 📊 View Expenses")
-        print("3. 🗑️  Delete Expense")
+        print("3. 🗑️ Delete Expense")
         print("4. 🚪 Exit")
 
 
