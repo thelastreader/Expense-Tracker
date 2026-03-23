@@ -9,7 +9,7 @@ def add_expense():
 
     # Ask for person's name
     person_name = input("Enter the name of the person: ")
-
+    person_name = person_name.strip().title()
     # Load existing data if JSON file exists
     if os.path.exists("data.json"):
         with open("data.json", "r", encoding="utf-8") as file:
@@ -27,6 +27,7 @@ def add_expense():
     # Loop to add multiple expenses
     while True:
         expense_type = input("Enter expense type (e.g., Food, Travel): ")
+        expense_type = expense_type.strip().title()
         try:
             amount = float(input("Enter amount: "))
         except ValueError:
@@ -34,7 +35,10 @@ def add_expense():
             continue
 
         # Add/update expense
-        data[person_name][expense_type] = amount
+        if expense_type not in data[person_name]:
+            data[person_name][expense_type] = amount
+        else:
+            data[person_name][expense_type] += amount
 
         # Ask if user wants to add more expenses
         more = input("Add another expense? (Y/N): ")
